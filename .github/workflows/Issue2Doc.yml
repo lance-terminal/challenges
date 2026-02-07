@@ -16,8 +16,7 @@ jobs:
 
       - name: Generate markdown from issue
         env:
-          GH_TOKEN: ${{ github.token }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
+          GH_TOKEN: ${{ github.token }}          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ', ') }}
@@ -27,33 +26,9 @@ jobs:
           ISSUE_CLOSED: ${{ github.event.issue.closed_at }}
           REPO: ${{ github.repository }}
         run: |
-          # Fetch Source from GitHub Project custom field via GraphQL
-          SOURCE=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $number: Int!) {
-              repository(owner: $owner, name: $repo) {
-                issue(number: $number) {
-                  projectItems(first: 10) {
-                    nodes {
-                      fieldValues(first: 20) {
-                        nodes {
-                          ... on ProjectV2ItemFieldSingleSelectValue {
-                            name
-                            field { ... on ProjectV2SingleSelectField { name } }
-                          }
-                          ... on ProjectV2ItemFieldTextValue {
-                            text
-                            field { ... on ProjectV2Field { name } }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }' -f owner="${REPO%/*}" -f repo="${REPO#*/}" -F number="$ISSUE_NUMBER" \
-            --jq '.data.repository.issue.projectItems.nodes[].fieldValues.nodes[] | select(.field.name == "Source") | (.name // .text)' 2>/dev/null | head -1)
-
-          SOURCE_DIR=${SOURCE:-Uncategorized}
+          # Use first label as directory name
+          SOURCE_DIR=$(echo "$ISSUE_LABELS" | cut -d',' -f1 | xargs)
+          SOURCE_DIR=${SOURCE_DIR:-Uncategorized}
 
           # Sanitize title for filename
           SAFE_TITLE=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
