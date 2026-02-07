@@ -1,3 +1,8 @@
+Source: `LeetCode`
+Category: `Basic Query`
+Challenge: `SQL`
+Focus Area: `LEFT JOIN`
+
 ![[Pasted image 20260207014629.png]]
 ### Personal Notes
 

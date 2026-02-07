@@ -1,3 +1,7 @@
+Source: `CyberDefender`
+Category: `Cloud Forensics (AWS)`
+Challenge: `Splunk`
+Focus Area: `Persistence`, `Privilege Escalation`, `Credential Access`
 ### Question 1
 Knowing which user account was compromised is essential for understanding the attacker's initial entry point into the environment. What is the username of the compromised user?
 
