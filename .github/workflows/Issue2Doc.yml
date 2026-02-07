@@ -43,7 +43,7 @@ jobs:
             echo ""
             echo "| Field | Detail |"
             echo "|-------|--------|"
-            echo "| **Issue** | [#${ISSUE_NUMBER} ${ISSUE_TITLE)](${ISSUE_URL}) |"
+            echo "| **Issue** | [#${ISSUE_NUMBER} - ${ISSUE_TITLE}](${ISSUE_URL}) |"
             echo "| **Author** | @${ISSUE_AUTHOR} |"
             echo "| **Labels** | ${ISSUE_LABELS:-None} |"
             echo "| **Created** | ${ISSUE_CREATED} |"
