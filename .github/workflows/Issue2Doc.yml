@@ -27,8 +27,32 @@ jobs:
           ISSUE_CLOSED: ${{ github.event.issue.closed_at }}
           REPO: ${{ github.repository }}
         run: |
-          # Parse Source field from issue body
-          SOURCE=$(echo "$ISSUE_BODY" | grep -i '^Source:' | head -1 | sed 's/^[Ss]ource:[[:space:]]*//' | tr -d '\r')
+          # Fetch Source from GitHub Project custom field via GraphQL
+          SOURCE=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $number) {
+                  projectItems(first: 10) {
+                    nodes {
+                      fieldValues(first: 20) {
+                        nodes {
+                          ... on ProjectV2ItemFieldSingleSelectValue {
+                            name
+                            field { ... on ProjectV2SingleSelectField { name } }
+                          }
+                          ... on ProjectV2ItemFieldTextValue {
+                            text
+                            field { ... on ProjectV2Field { name } }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f owner="${REPO%/*}" -f repo="${REPO#*/}" -F number="$ISSUE_NUMBER" \
+            --jq '.data.repository.issue.projectItems.nodes[].fieldValues.nodes[] | select(.field.name == "Source") | (.name // .text)' 2>/dev/null | head -1)
+
           SOURCE_DIR=${SOURCE:-Uncategorized}
 
           # Sanitize title for filename
