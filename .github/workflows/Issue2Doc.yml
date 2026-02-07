@@ -27,11 +27,15 @@ jobs:
           ISSUE_CLOSED: ${{ github.event.issue.closed_at }}
           REPO: ${{ github.repository }}
         run: |
-          mkdir -p docs
+          # Parse Source field from issue body
+          SOURCE=$(echo "$ISSUE_BODY" | grep -i '^Source:' | head -1 | sed 's/^[Ss]ource:[[:space:]]*//' | tr -d '\r')
+          SOURCE_DIR=${SOURCE:-Uncategorized}
 
           # Sanitize title for filename
           SAFE_TITLE=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
-          FILENAME="docs/${ISSUE_NUMBER}-${SAFE_TITLE}.md"
+
+          mkdir -p "${SOURCE_DIR}"
+          FILENAME="${SOURCE_DIR}/${SAFE_TITLE}.md"
 
           # Build the doc
           {
@@ -39,7 +43,7 @@ jobs:
             echo ""
             echo "| Field | Detail |"
             echo "|-------|--------|"
-            echo "| **Issue** | [#${ISSUE_NUMBER}](${ISSUE_URL}) |"
+            echo "| **Issue** | [#${ISSUE_NUMBER} ${ISSUE_TITLE)](${ISSUE_URL}) |"
             echo "| **Author** | @${ISSUE_AUTHOR} |"
             echo "| **Labels** | ${ISSUE_LABELS:-None} |"
             echo "| **Created** | ${ISSUE_CREATED} |"
@@ -68,6 +72,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
+          git add .
           git commit -m "docs: add documentation from issue #${{ github.event.issue.number }}" || exit 0
           git push
