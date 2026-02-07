@@ -1,0 +1,63 @@
+name: Issue to Documentation
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  create-doc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate markdown from issue
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ', ') }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_CREATED: ${{ github.event.issue.created_at }}
+          ISSUE_CLOSED: ${{ github.event.issue.closed_at }}
+        run: |
+          mkdir -p docs
+
+          # Sanitize title for filename
+          SAFE_TITLE=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
+          FILENAME="docs/${ISSUE_NUMBER}-${SAFE_TITLE}.md"
+
+          cat > "$FILENAME" << 'DOCEOF'
+          # Placeholder
+          DOCEOF
+
+          # Write the actual content (using printf to handle special chars)
+          {
+            echo "# ${ISSUE_TITLE}"
+            echo ""
+            echo "| Field | Detail |"
+            echo "|-------|--------|"
+            echo "| **Issue** | [#${ISSUE_NUMBER}](${ISSUE_URL}) |"
+            echo "| **Author** | @${ISSUE_AUTHOR} |"
+            echo "| **Labels** | ${ISSUE_LABELS:-None} |"
+            echo "| **Created** | ${ISSUE_CREATED} |"
+            echo "| **Closed** | ${ISSUE_CLOSED} |"
+            echo ""
+            echo "---"
+            echo ""
+            echo "${ISSUE_BODY}"
+          } > "$FILENAME"
+
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "docs: add documentation from issue #${{ github.event.issue.number }}" || exit 0
+          git push
