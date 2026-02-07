@@ -16,6 +16,7 @@ jobs:
 
       - name: Generate markdown from issue
         env:
+          GH_TOKEN: ${{ github.token }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -24,6 +25,7 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.html_url }}
           ISSUE_CREATED: ${{ github.event.issue.created_at }}
           ISSUE_CLOSED: ${{ github.event.issue.closed_at }}
+          REPO: ${{ github.repository }}
         run: |
           mkdir -p docs
 
@@ -31,11 +33,7 @@ jobs:
           SAFE_TITLE=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
           FILENAME="docs/${ISSUE_NUMBER}-${SAFE_TITLE}.md"
 
-          cat > "$FILENAME" << 'DOCEOF'
-          # Placeholder
-          DOCEOF
-
-          # Write the actual content (using printf to handle special chars)
+          # Build the doc
           {
             echo "# ${ISSUE_TITLE}"
             echo ""
@@ -50,6 +48,18 @@ jobs:
             echo "---"
             echo ""
             echo "${ISSUE_BODY}"
+            echo ""
+
+            # Fetch and append all comments
+            COMMENTS=$(gh api "repos/${REPO}/issues/${ISSUE_NUMBER}/comments" --paginate --jq '.[] | "---\n\n**\(.user.login)** — \(.created_at)\n\n\(.body)\n"')
+
+            if [ -n "$COMMENTS" ]; then
+              echo ""
+              echo "## Comments"
+              echo ""
+              echo "$COMMENTS"
+            fi
+
           } > "$FILENAME"
 
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
