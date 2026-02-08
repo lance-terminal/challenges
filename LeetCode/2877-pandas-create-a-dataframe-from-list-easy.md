@@ -1,12 +1,12 @@
-# 2877.Pandas Create a DataFrame from List - EASY
+# 2877.Pandas Create a DataFrame from List - Easy
 
 | Field | Detail |
 |-------|--------|
-| **Issue** | [#9 - 2877.Pandas Create a DataFrame from List - EASY](https://github.com/lance-terminal/challenges/issues/9) |
+| **Issue** | [#9 - 2877.Pandas Create a DataFrame from List - Easy](https://github.com/lance-terminal/challenges/issues/9) |
 | **Author** | @lance-terminal |
 | **Labels** | LeetCode |
 | **Created** | 2026-02-08T03:44:41Z |
-| **Closed** | 2026-02-08T03:54:56Z |
+| **Closed** | 2026-02-08T04:14:41Z |
 
 ---
 
