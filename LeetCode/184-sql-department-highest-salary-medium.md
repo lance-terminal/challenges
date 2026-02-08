@@ -11,8 +11,9 @@
 ---
 
 # [184. Department Highest Salary](https://leetcode.com/problems/department-highest-salary/)
-```SQL
+
 Table: `Employee`
+```SQL
 +--------------+---------+
 | Column Name  | Type    |
 +--------------+---------+
